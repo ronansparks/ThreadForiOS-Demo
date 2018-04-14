@@ -51,7 +51,6 @@ class GCDTableVC: UITableViewController {
                 executeAsync(queue: concurrentQueue, message: "并发异步 \(i)")
             }
         case (1, 2):
-            print("")
             for i in 0...3 {
                 executeAsync(queue: .main, message: "主队列异步 \(i)")
             }
@@ -66,6 +65,8 @@ class GCDTableVC: UITableViewController {
         }
     }
     
+    //MARK: - GCD 的基本用法
+    
     //同步执行
     func executeSync(queue: DispatchQueue, message: String) {
         queue.sync {
@@ -79,6 +80,8 @@ class GCDTableVC: UITableViewController {
             print("\(message), \(Thread.current)")
         }
     }
+    
+    //MARK: - GCD 的更多用法
     
     func testGCDThreadCommunication() {
         indicatorView.startAnimating()
@@ -98,7 +101,8 @@ class GCDTableVC: UITableViewController {
     
     func testBarrier() {
         let concurrentQueue = DispatchQueue(label: "anything you like", attributes: .concurrent)
-        for i in 0...2 {
+        //加入4个异步线程
+        for i in 0...3 {
             executeAsync(queue: concurrentQueue, message: "栅栏之前：并发异步 \(i)")
         }
         
@@ -107,7 +111,8 @@ class GCDTableVC: UITableViewController {
             print("我就是传说中的栅栏")
         }
         
-        for i in 0..<2 {
+        //再加4个异步线程
+        for i in 0...3 {
             executeAsync(queue: concurrentQueue, message: "栅栏之后：并发异步 \(i)")
         }
     }
@@ -115,17 +120,12 @@ class GCDTableVC: UITableViewController {
     func testGroup() {
         let concurrentQueue = DispatchQueue(label: "anything you like", attributes: .concurrent)
         let group = DispatchGroup()
-        concurrentQueue.async(group: group, qos: .default, flags: []) {
-            print("任务 1")
-        }
-        concurrentQueue.async(group: group, qos: .default, flags: []) {
-            print("任务 2")
-        }
-        concurrentQueue.async(group: group, qos: .default, flags: []) {
-            print("任务 3")
-        }
-        concurrentQueue.async(group: group, qos: .default, flags: []) {
-            print("任务 4")
+        
+        //加入4个异步线程到组里
+        for i in 0...3 {
+            concurrentQueue.async(group: group, qos: .default, flags: []) {
+                print("任务 \(i)")
+            }
         }
         group.notify(queue: concurrentQueue) {
             print("老板，所有任务都做完啦！")

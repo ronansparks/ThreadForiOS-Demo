@@ -30,7 +30,7 @@ class OperationTableVC: UITableViewController {
         case (0, 1):
             testCustomOperation()
         case (1, 0):
-            testBlockOperationBlock()
+            testBlockOperationAsync()
         case (1, 1):
             testOperationAddToQueue()
         case (1, 2):
@@ -58,7 +58,8 @@ class OperationTableVC: UITableViewController {
         rwOperation.start()
     }
     
-    func testBlockOperationBlock() {
+    //创建操作，不用加入队列，实现异步执行
+    func testBlockOperationAsync() {
         let blockOperation = BlockOperation {
             print("This is \(#function)")
         }
@@ -70,22 +71,19 @@ class OperationTableVC: UITableViewController {
         blockOperation.start()
     }
     
+    //创建几个操作，添加到队列，实现异步执行
     func testOperationAddToQueue() {
-        let blockOperation1 = BlockOperation {
-            print("Task 1 in this operation")
-        }
-        let blockOperation2 = BlockOperation {
-            print("Task 2 in this operation")
-        }
-        let blockOperation3 = BlockOperation {
-            print("Task 3 in this operation")
-        }
         let queue = OperationQueue()
-        queue.addOperation(blockOperation1)
-        queue.addOperation(blockOperation2)
-        queue.addOperation(blockOperation3)
+        
+        for i in 0...3 {
+            let blockOperation = BlockOperation {
+                print("Task \(i)")
+            }
+            queue.addOperation(blockOperation)
+        }
     }
     
+    //不需要单独创建操作，实现异步执行
     func testQueueBlock() {
         //默认是并发
         let queue = OperationQueue()
@@ -96,6 +94,7 @@ class OperationTableVC: UITableViewController {
         }
     }
     
+    //线程间通信
     func testCommunication() {
         indicatorView.startAnimating()
         let queue = OperationQueue()
@@ -120,21 +119,9 @@ class OperationTableVC: UITableViewController {
         //最大并发数为2，并发
         queue.maxConcurrentOperationCount = 2
         
-        queue.addOperation {
-            for i in 0...2 {
-                print("Task 1 \(i)")
-            }
-        }
-        
-        queue.addOperation {
-            for i in 0...2 {
-                print("Task 2 \(i)")
-            }
-        }
-        
-        queue.addOperation {
-            for i in 0...2 {
-                print("Task 3 \(i)")
+        for i in 0...3 {
+            queue.addOperation {
+                print("Task \(i)")
             }
         }
     }
@@ -153,7 +140,9 @@ class OperationTableVC: UITableViewController {
             }
         }
         
+        //注释掉，任务1和2没有先后顺序
         blockOperation2.addDependency(blockOperation1)
+        
         queue.addOperation(blockOperation1)
         queue.addOperation(blockOperation2)
     }
